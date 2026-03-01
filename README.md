@@ -1,18 +1,101 @@
-EnjoyCity – Turista nella tua città
+🌍 EnjoyCity
 
-EnjoyCity è una piattaforma web per la gestione e promozione di eventi locali ad Avellino e provincia, sviluppata per il corso di Tecnologie Web (Università degli Studi di Salerno – DIEM).
+Piattaforma web per la gestione e promozione di eventi locali.
 
-L’applicazione consente di consultare, prenotare e proporre eventi, con sistema di moderazione amministrativa e gestione multi-ruolo.
+EnjoyCity è un sistema web full-stack sviluppato in PHP e PostgreSQL che consente la consultazione, prenotazione e moderazione di eventi locali attraverso un’architettura multi-ruolo (utente anonimo, utente registrato, amministratore).
 
-👥 Ruoli
+🎥 Demo
 
-Utente anonimo → visualizzazione eventi e filtri
+(Inserire qui eventuale link video o screenshot del progetto)
 
-Utente registrato → prenotazioni, area personale, preferenze categorie (drag & drop), proposta eventi
+🚀 Funzionalità Principali
+🔎 Consultazione eventi
 
-Admin → dashboard e gestione completa ciclo di vita evento (approvazione, rifiuto, archiviazione, annullamento)
+Visualizzazione eventi con filtri per categoria
 
-🛠 Tecnologie utilizzate
+Ordinamento per data
+
+Badge dinamici (annullato, archiviato)
+
+Geolocalizzazione “Eventi vicino a me”
+
+👤 Area Utente Registrato
+
+Prenotazione eventi
+
+Visualizzazione eventi prenotati con countdown
+
+Gestione preferenze categorie tramite drag & drop
+
+Proposta nuovi eventi (stato: in_attesa)
+
+🛠 Area Amministratore
+
+Dashboard di controllo
+
+Moderazione eventi:
+
+Approva
+
+Rifiuta
+
+Archivia
+
+Annulla
+
+Ripristina
+
+Gestione completa del ciclo di vita dell’evento (LIVE, PENDING, DONE, CANCELLED, ARCHIVED)
+
+🏗 Architettura del Sistema
+
+L’applicazione è strutturata in modo modulare:
+
+Logica Server-Side (PHP)
+
+Separazione ruoli con controlli di sessione
+
+Pattern PRG (Post-Redirect-Get)
+
+Validazioni lato server
+
+Prepared statements (pg_query_params)
+
+Database (PostgreSQL)
+
+Tabelle relazionali: utenti, eventi, categorie, prenotazioni, preferenze
+
+Password hashate
+
+Vincoli di integrità referenziale
+
+Frontend
+
+HTML5 / CSS3
+
+JavaScript per:
+
+Drag & Drop preferenze
+
+Countdown eventi
+
+Geolocalizzazione browser
+
+Gestione dinamica UI
+
+🔐 Sicurezza
+
+Controllo accessi per ruolo
+
+Protezione SQL Injection
+
+Escape output per prevenzione XSS
+
+Gestione sicura delle sessioni
+
+Validazioni lato client e server
+
+🖥 Tecnologie Utilizzate
 
 PHP
 
@@ -24,22 +107,20 @@ JavaScript
 
 Apache (XAMPP)
 
-GitHub
+Git & GitHub
 
-🔐 Caratteristiche principali
+👥 Team
 
-Gestione sessioni e ruoli
+Progetto sviluppato dal Gruppo 22:
 
-Prepared statements (anti SQL Injection)
+Vincenzo Galdiero
 
-Pattern PRG
+Dana Iannaccone
 
-Geolocalizzazione eventi
+Andrea Purcaro ()
 
-Countdown prenotazioni
+🎓 Contesto Accademico
 
-Sistema di moderazione strutturato
-
-🎓 Finalità
-
-Progetto accademico finalizzato a dimostrare competenze in sviluppo web full-stack, progettazione database relazionale e sicurezza applicativa.
+Progetto realizzato per il corso di Tecnologie Web
+Università degli Studi di Salerno – DIEM
+A.A. 2025/2026
