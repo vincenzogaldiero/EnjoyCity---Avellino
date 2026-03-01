@@ -1,0 +1,695 @@
+--
+-- PostgreSQL database dump
+--
+
+\restrict ihNoN3MnDrhtC2NvOkXIhFiyjA8gNMsd6wIEwi33gPvEeUwFm8rhP0dKIQG4Hzt
+
+-- Dumped from database version 18.1
+-- Dumped by pg_dump version 18.1
+
+-- Started on 2026-02-22 20:28:47
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 5099 (class 1262 OID 16531)
+-- Name: gruppo22; Type: DATABASE; Schema: -; Owner: www
+--
+
+CREATE DATABASE gruppo22 WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PROVIDER = libc LOCALE = 'Italian_Italy.1252';
+
+
+ALTER DATABASE gruppo22 OWNER TO www;
+
+\unrestrict ihNoN3MnDrhtC2NvOkXIhFiyjA8gNMsd6wIEwi33gPvEeUwFm8rhP0dKIQG4Hzt
+\connect gruppo22
+\restrict ihNoN3MnDrhtC2NvOkXIhFiyjA8gNMsd6wIEwi33gPvEeUwFm8rhP0dKIQG4Hzt
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- TOC entry 4 (class 2615 OID 2200)
+-- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO pg_database_owner;
+
+--
+-- TOC entry 5100 (class 0 OID 0)
+-- Dependencies: 4
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- TOC entry 222 (class 1259 OID 16551)
+-- Name: categorie; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.categorie (
+    id integer NOT NULL,
+    nome character varying(50) NOT NULL
+);
+
+
+ALTER TABLE public.categorie OWNER TO www;
+
+--
+-- TOC entry 221 (class 1259 OID 16550)
+-- Name: categorie_id_seq; Type: SEQUENCE; Schema: public; Owner: www
+--
+
+CREATE SEQUENCE public.categorie_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.categorie_id_seq OWNER TO www;
+
+--
+-- TOC entry 5101 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: categorie_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: www
+--
+
+ALTER SEQUENCE public.categorie_id_seq OWNED BY public.categorie.id;
+
+
+--
+-- TOC entry 224 (class 1259 OID 16562)
+-- Name: eventi; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.eventi (
+    id integer NOT NULL,
+    titolo character varying(100) NOT NULL,
+    descrizione_breve character varying(255) NOT NULL,
+    descrizione_lunga text NOT NULL,
+    immagine character varying(255),
+    data_evento timestamp without time zone NOT NULL,
+    luogo character varying(100) NOT NULL,
+    latitudine numeric(9,6),
+    longitudine numeric(9,6),
+    prezzo numeric(10,2) DEFAULT 0.00,
+    posti_totali integer,
+    posti_prenotati integer DEFAULT 0,
+    prenotazione_obbligatoria boolean DEFAULT false,
+    stato character varying(20) DEFAULT 'in_attesa'::character varying,
+    organizzatore_id integer,
+    categoria_id integer,
+    archiviato boolean DEFAULT false NOT NULL,
+    stato_evento character varying(20) DEFAULT 'attivo'::character varying NOT NULL,
+    CONSTRAINT chk_eventi_info_no_booking CHECK (((posti_totali IS NOT NULL) OR ((prenotazione_obbligatoria = false) AND (posti_prenotati = 0)))),
+    CONSTRAINT ck_eventi_stato_evento CHECK (((stato_evento)::text = ANY ((ARRAY['attivo'::character varying, 'annullato'::character varying])::text[]))),
+    CONSTRAINT ck_posti_prenotati_range CHECK (((posti_totali IS NULL) OR ((posti_prenotati >= 0) AND (posti_prenotati <= posti_totali)))),
+    CONSTRAINT ck_prenotazione_posti CHECK (((prenotazione_obbligatoria = false) OR ((posti_totali IS NOT NULL) AND (posti_totali > 0)))),
+    CONSTRAINT eventi_stato_check CHECK (((stato)::text = ANY ((ARRAY['approvato'::character varying, 'in_attesa'::character varying, 'rifiutato'::character varying])::text[]))),
+    CONSTRAINT eventi_stato_evento_check CHECK (((stato_evento)::text = ANY ((ARRAY['attivo'::character varying, 'annullato'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.eventi OWNER TO www;
+
+--
+-- TOC entry 223 (class 1259 OID 16561)
+-- Name: eventi_id_seq; Type: SEQUENCE; Schema: public; Owner: www
+--
+
+CREATE SEQUENCE public.eventi_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.eventi_id_seq OWNER TO www;
+
+--
+-- TOC entry 5102 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: eventi_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: www
+--
+
+ALTER SEQUENCE public.eventi_id_seq OWNED BY public.eventi.id;
+
+
+--
+-- TOC entry 229 (class 1259 OID 16627)
+-- Name: preferenze_utente; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.preferenze_utente (
+    utente_id integer NOT NULL,
+    categoria_id integer NOT NULL,
+    ordine integer NOT NULL
+);
+
+
+ALTER TABLE public.preferenze_utente OWNER TO www;
+
+--
+-- TOC entry 226 (class 1259 OID 16588)
+-- Name: prenotazioni; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.prenotazioni (
+    id integer NOT NULL,
+    utente_id integer,
+    evento_id integer,
+    quantita integer DEFAULT 1,
+    data_prenotazione timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    notificato_annullamento boolean DEFAULT false NOT NULL,
+    CONSTRAINT ck_prenotazioni_quantita CHECK ((quantita > 0))
+);
+
+
+ALTER TABLE public.prenotazioni OWNER TO www;
+
+--
+-- TOC entry 225 (class 1259 OID 16587)
+-- Name: prenotazioni_id_seq; Type: SEQUENCE; Schema: public; Owner: www
+--
+
+CREATE SEQUENCE public.prenotazioni_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.prenotazioni_id_seq OWNER TO www;
+
+--
+-- TOC entry 5103 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: prenotazioni_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: www
+--
+
+ALTER SEQUENCE public.prenotazioni_id_seq OWNED BY public.prenotazioni.id;
+
+
+--
+-- TOC entry 228 (class 1259 OID 16608)
+-- Name: recensioni; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.recensioni (
+    id integer NOT NULL,
+    utente_id integer,
+    testo text NOT NULL,
+    voto integer,
+    stato character varying(20) DEFAULT 'in_attesa'::character varying,
+    data_recensione timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    nome_visibile character varying(80),
+    data_creazione timestamp without time zone DEFAULT now(),
+    titolo character varying(120),
+    CONSTRAINT recensioni_stato_check CHECK (((stato)::text = ANY ((ARRAY['approvato'::character varying, 'in_attesa'::character varying, 'rifiutato'::character varying])::text[]))),
+    CONSTRAINT recensioni_voto_check CHECK (((voto >= 1) AND (voto <= 5)))
+);
+
+
+ALTER TABLE public.recensioni OWNER TO www;
+
+--
+-- TOC entry 227 (class 1259 OID 16607)
+-- Name: recensioni_id_seq; Type: SEQUENCE; Schema: public; Owner: www
+--
+
+CREATE SEQUENCE public.recensioni_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.recensioni_id_seq OWNER TO www;
+
+--
+-- TOC entry 5104 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: recensioni_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: www
+--
+
+ALTER SEQUENCE public.recensioni_id_seq OWNED BY public.recensioni.id;
+
+
+--
+-- TOC entry 220 (class 1259 OID 16533)
+-- Name: utenti; Type: TABLE; Schema: public; Owner: www
+--
+
+CREATE TABLE public.utenti (
+    id integer NOT NULL,
+    nome character varying(50) NOT NULL,
+    cognome character varying(50) NOT NULL,
+    email character varying(100) NOT NULL,
+    password character varying(255) NOT NULL,
+    ruolo character varying(20) NOT NULL,
+    bloccato boolean DEFAULT false,
+    data_registrazione timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    bloccato_fino timestamp without time zone,
+    CONSTRAINT utenti_ruolo_check CHECK (((ruolo)::text = ANY ((ARRAY['admin'::character varying, 'user'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.utenti OWNER TO www;
+
+--
+-- TOC entry 219 (class 1259 OID 16532)
+-- Name: utenti_id_seq; Type: SEQUENCE; Schema: public; Owner: www
+--
+
+CREATE SEQUENCE public.utenti_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER SEQUENCE public.utenti_id_seq OWNER TO www;
+
+--
+-- TOC entry 5105 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: utenti_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: www
+--
+
+ALTER SEQUENCE public.utenti_id_seq OWNED BY public.utenti.id;
+
+
+--
+-- TOC entry 4883 (class 2604 OID 16554)
+-- Name: categorie id; Type: DEFAULT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.categorie ALTER COLUMN id SET DEFAULT nextval('public.categorie_id_seq'::regclass);
+
+
+--
+-- TOC entry 4884 (class 2604 OID 16565)
+-- Name: eventi id; Type: DEFAULT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.eventi ALTER COLUMN id SET DEFAULT nextval('public.eventi_id_seq'::regclass);
+
+
+--
+-- TOC entry 4891 (class 2604 OID 16591)
+-- Name: prenotazioni id; Type: DEFAULT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni ALTER COLUMN id SET DEFAULT nextval('public.prenotazioni_id_seq'::regclass);
+
+
+--
+-- TOC entry 4895 (class 2604 OID 16611)
+-- Name: recensioni id; Type: DEFAULT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.recensioni ALTER COLUMN id SET DEFAULT nextval('public.recensioni_id_seq'::regclass);
+
+
+--
+-- TOC entry 4880 (class 2604 OID 16536)
+-- Name: utenti id; Type: DEFAULT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.utenti ALTER COLUMN id SET DEFAULT nextval('public.utenti_id_seq'::regclass);
+
+
+--
+-- TOC entry 5086 (class 0 OID 16551)
+-- Dependencies: 222
+-- Data for Name: categorie; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.categorie (id, nome) FROM stdin;
+1	Sagre
+2	Musica
+3	Teatro
+4	Sport
+5	Cultura
+6	Famiglia
+7	Natura
+8	Food & Wine
+\.
+
+
+--
+-- TOC entry 5088 (class 0 OID 16562)
+-- Dependencies: 224
+-- Data for Name: eventi; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.eventi (id, titolo, descrizione_breve, descrizione_lunga, immagine, data_evento, luogo, latitudine, longitudine, prezzo, posti_totali, posti_prenotati, prenotazione_obbligatoria, stato, organizzatore_id, categoria_id, archiviato, stato_evento) FROM stdin;
+1	Avellino Summer Fest	Musica live e dj set sul corso principale.	Una lunga notte di musica, street food e installazioni luminose su Corso Vittorio Emanuele ad Avellino. Palco centrale, area giovani e zona famiglie, tutto a ingresso gratuito.	uploads/eventi/ev_1771691115_317828ba88d8.jpg	2026-06-15 21:00:00	Corso Vittorio Emanuele (Avellino)	40.917308	14.794494	0.00	\N	0	f	approvato	1	2	f	annullato
+16	Passeggiata Naturalistica sul Partenio	Escursione panoramica con guida naturalistica sui sentieri del Partenio.	Itinerario ad anello adatto anche a famiglie abituate a camminare, con soste per osservare la flora e la fauna locali. Fornite schede didattiche per i bambini, assicurazione inclusa nella quota di partecipazione. Obbligatorie scarpe da trekking e zainetto con acqua.	uploads/eventi/ev_1771691052_9a64b3f6ca3d.jpg	2026-05-30 09:00:00	Parco Regionale del Partenio	40.933000	14.780000	18.00	35	16	t	approvato	2	7	f	attivo
+8	Degustazione Vini Irpini	Serata di degustazione guidata.	Sommelier professionisti guidano i partecipanti alla scoperta dei grandi vini irpini: Fiano di Avellino, Greco di Tufo e Taurasi, abbinati a prodotti tipici del territorio.	uploads/eventi/ev_1771690830_f2ad926d7ea4.jpg	2026-03-20 20:30:00	Taurasi	40.985000	14.986000	25.00	60	4	t	approvato	2	8	f	attivo
+12	Sagra della Pizza & Tagliata	Serata dedicata alla pizza tradizionale con forni a legna all’aperto.	Degustazione di pizze classiche e gourmet preparate da maestri pizzaioli irpini. Area tavoli sotto le stelle, intrattenimento musicale dal vivo e spazio bimbi con animazione. Parte del ricavato sarà devoluto a un’associazione locale.	uploads/eventi/ev_1771691152_00c269258a68.png	2026-06-20 20:00:00	Atripalda (area eventi)	40.913200	14.830500	8.00	350	140	t	approvato	1	1	f	attivo
+18	Wine & Jazz	Serata jazz con degustazione di vini irpini selezionati.	Un quintetto jazz accompagna la degustazione guidata di quattro etichette di vino locale. Posti solo seduti, tavoli condivisi, possibilità di aggiungere tagliere di salumi e formaggi al momento della prenotazione. Dress code consigliato: casual elegante.	uploads/eventi/ev_1771691215_1c14e9967764.jpg	2026-06-28 21:00:00	Cortile di un Palazzo Storico (Avellino)	40.915300	14.794800	28.00	90	52	t	approvato	3	8	f	attivo
+11	Festival dello Street Food Irpino	Quattro giorni dedicati allo street food di qualità nel cuore di Avellino.	Food truck selezionati da tutta Italia, birrifici artigianali irpini, area musica live e laboratori di cucina per bambini. Ogni sera un tema diverso (burger night, tipico irpino, cucina etnica) e uno show cooking con chef ospiti.	uploads/eventi/ev_1771691279_ad220299ced2.jpg	2026-07-10 19:00:00	Piazza Libertà (Avellino)	40.914800	14.795200	0.00	500	210	t	approvato	2	8	f	attivo
+13	Concerto Sinfonico sotto le Stelle	Orchestra sinfonica in concerto all’aperto con repertorio classico e colonne sonore.	L’Orchestra Filarmonica Irpina propone una selezione di brani di Mozart, Beethoven e Morricone in una cornice suggestiva. Posti a sedere numerati, area disabili dedicata, possibilità di prenotazione online con scelta del settore.	uploads/eventi/ev_1771691344_004e2bcbf24e.webp	2026-07-25 21:00:00	Belvedere di Montevergine	40.936500	14.787000	15.00	250	90	t	approvato	3	2	f	attivo
+14	Rassegna Cinema all’Aperto - Estate d’Autore	Proiezioni serali di film d’autore nel centro storico.	Ogni settimana un film diverso, introdotto da un critico cinematografico o da un ospite speciale. Sedute su sdraio e pouf, cuffie wireless per una migliore esperienza audio, punto ristoro con prodotti tipici. In caso di pioggia, proiezione spostata al chiuso.	uploads/eventi/ev_1771691394_2309abdc8a0a.jpg	2026-08-05 21:30:00	Avellino, Chiostro del Comune	40.914900	14.796300	6.00	180	60	t	approvato	4	5	f	attivo
+17	Corsa Non Competitiva "CorriAvellino"	Gara podistica cittadina aperta a tutti, con percorso ad anello nel centro.	Due percorsi disponibili: 5 km per famiglie e camminatori, 10 km per i runner più allenati. Partenza e arrivo in Piazza Libertà, ristori intermedi, pacco gara con t-shirt tecnica e medaglia per tutti i partecipanti.	uploads/eventi/ev_1771691419_fc49f61eb9ce.jpg	2026-09-13 09:30:00	Piazza Libertà (Avellino)	40.914800	14.795200	12.00	400	180	t	approvato	1	4	f	attivo
+19	Spettacolo di Magia per Bambini	Show di magia interattivo pensato per i più piccoli.	Un giovane illusionista propone numeri di magia scenica e close-up coinvogendo attivamente i bambini sul palco. L’evento è stato proposto da un’associazione culturale e attende la valutazione dell’amministratore per i dettagli legati alla sicurezza e alla capienza.	uploads/eventi/ev_1771691490_7d781e5079a7.jpg	2026-04-19 17:00:00	Teatro Comunale di Mercogliano	40.930700	14.743600	10.00	150	0	t	in_attesa	4	6	f	attivo
+7	Festival del Teatro Civile	Rassegna di spettacoli teatrali sul tema dei diritti.	Compagnie professionali e amatoriali si alternano sul palco del Teatro Gesualdo. Evento proposto da un utente e in attesa di moderazione da parte dell’amministratore.	uploads/eventi/ev_1771691511_dcffa027b237.png	2026-05-05 21:00:00	Teatro Carlo Gesualdo (Avellino)	40.916000	14.792000	18.00	200	0	t	in_attesa	3	3	f	attivo
+5	Trekking sul Terminio	Escursione guidata sui sentieri del Terminio.	Percorso ad anello con guida AIGAE, soste panoramiche e ristoro finale in rifugio. Adatto a camminatori con un minimo di allenamento.	uploads/eventi/ev_1771690883_6f6757f4056c.jpg	2026-04-10 09:00:00	Monte Terminio	40.840000	14.990000	20.00	40	1	t	approvato	2	7	f	attivo
+6	Torneo di Calcetto Cittadino	Torneo amatoriale a squadre su campi sintetici.	Iscrizione a squadre, fase a gironi e finali. Evento annullato per impraticabilità dei campi a causa del maltempo.	uploads/eventi/ev_1771691771_d32e71f6742e.jpg	2026-03-02 20:30:00	Campo CONI (Avellino)	40.912000	14.793000	5.00	16	8	t	approvato	1	4	f	annullato
+9	Concerto Rock	Proposta evento con dati incompleti.	Evento rifiutato dall’amministratore perché privo di informazioni essenziali su sicurezza, capienza e orari di chiusura.		2026-03-01 21:00:00	Provincia di Avellino	\N	\N	10.00	50	0	t	rifiutato	4	2	f	attivo
+4	Mostra d'Arte Contemporanea	Esposizione temporanea di artisti emergenti.	Mostra conclusa presso il Museo Irpino di Avellino con installazioni, fotografie e performance. Archiviata per pulire la vetrina, ma mantenuta per lo storico.	uploads/eventi/mostra_arte_contemporanea.jpg	2025-12-08 18:00:00	Museo Irpino (Avellino)	40.914500	14.794000	7.00	80	45	t	approvato	3	5	f	attivo
+22	Sagra del Tartufo Irpino	Proposta di sagra dedicata al tartufo nero locale.	Evento proposto da un gruppo informale senza indicazioni chiare su piano di sicurezza, gestione traffico e autorizzazioni sanitarie per la somministrazione di alimenti. L’amministratore ha rifiutato la proposta in attesa di documentazione più completa.	\N	2026-10-05 19:30:00	Piccolo borgo dell’Irpinia	\N	\N	5.00	200	0	t	rifiutato	4	1	f	attivo
+2	Notte Bianca Montella	Concerti, spettacoli e negozi aperti fino a tarda notte.	Centro storico chiuso al traffico, palchi diffusi, artisti di strada, area food e intrattenimento per bambini. Un grande evento di comunità nel cuore di Montella.	uploads/eventi/ev_1771690771_461a43d869f6.jpg	2026-03-15 21:30:00	Montella (centro storico)	40.840500	15.000200	0.00	300	120	t	approvato	2	1	f	attivo
+15	Family Day al Parco Manganelli	Giornata di giochi, sport e laboratori creativi per famiglie.	Animazione con mascotte, percorsi a ostacoli per bambini, yoga genitore-figlio sul prato e laboratori di riciclo creativo. Area picnic libera, possibilità di prenotare un cestino merenda con prodotti locali. Evento pensato per famiglie con bambini 3–12 anni.	uploads/eventi/ev_1771690993_7327aff5d973.jpg	2026-05-17 10:00:00	Parco Antonio Manganelli (Avellino)	40.917466	14.794958	5.00	200	75	t	approvato	5	6	f	attivo
+20	Campionato Provinciale di Basket Under 18	Fasi finali del campionato giovanile con squadre della provincia.	Semifinali e finale in un’unica giornata, con premiazione finale e presenza di osservatori delle società maggiori. Evento annullato a seguito di lavori straordinari sull’impianto sportivo e indisponibilità del palazzetto nelle date previste.	uploads/eventi/ev_1771691716_19d60024837d.jpg	2026-04-25 15:00:00	Palazzetto dello Sport (Avellino)	40.914200	14.791800	3.00	300	110	t	approvato	5	4	f	annullato
+10	Laboratorio di Lettura per Bambini	Incontri settimanali sulla lettura ad alta voce.	Ciclo di incontri in biblioteca dedicati a bambini dai 6 ai 10 anni, con letture animate e piccoli laboratori creativi. Evento già concluso nelle date precedenti e archiviato.	uploads/eventi/laboratorio_lettura_bambini.jpg	2025-11-15 16:30:00	Biblioteca Comunale (Avellino)	40.913500	14.796500	0.00	25	20	t	approvato	5	6	t	attivo
+3	Sagra della Castagna IGP	La tradizionale sagra autunnale di Montella.	Stand gastronomici, visite guidate ai castagneti, showcooking e musica popolare. Evento concluso, utile per lo storico delle prenotazioni.	uploads/eventi/sagra_castagna_igp.jpg	2025-10-26 11:00:00	Montella	40.841000	15.016000	0.00	\N	0	f	approvato	1	1	f	attivo
+21	Fiera del Libro Indipendente	Incontro tra piccoli editori, autori emergenti e lettori.	Due giorni di presentazioni, firmacopie, reading e workshop di scrittura creativa negli spazi della biblioteca comunale. L’evento è concluso e archiviato per non comparire più nella vetrina principale, ma rimane nello storico per consultare recensioni e prenotazioni.	uploads/eventi/fiera_libro_indipendente.jpg	2025-04-12 10:00:00	Biblioteca Comunale (Avellino)	40.913500	14.796500	0.00	150	95	t	approvato	2	5	t	annullato
+23	Finale di Sanremo	Proiezione finale di Sanremo	Vivi l’emozione della Finale del Festival di Sanremo 2026 su maxi schermo in un’atmosfera unica e coinvolgente!\r\n\r\nUna serata speciale dedicata alla musica italiana, tra esibizioni live, votazioni in tempo reale e commenti a caldo sui brani in gara.	uploads/eventi/ev_1771752730_0e5523c455d1.jpg	2026-02-28 21:00:00	Avellino	40.917389	14.794944	0.00	50	0	t	in_attesa	8	2	f	attivo
+24	Pasquetta	Giornata all'insegna del divertimento	Se magna, se beve, se sta yeah yeah!	\N	2026-04-08 12:00:00	VIlla Mersedes	\N	\N	0.00	0	0	f	rifiutato	2	2	f	attivo
+\.
+
+
+--
+-- TOC entry 5093 (class 0 OID 16627)
+-- Dependencies: 229
+-- Data for Name: preferenze_utente; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.preferenze_utente (utente_id, categoria_id, ordine) FROM stdin;
+2	2	1
+2	8	2
+3	7	1
+3	1	2
+4	4	1
+5	8	1
+6	5	1
+7	6	1
+\.
+
+
+--
+-- TOC entry 5090 (class 0 OID 16588)
+-- Dependencies: 226
+-- Data for Name: prenotazioni; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.prenotazioni (id, utente_id, evento_id, quantita, data_prenotazione, notificato_annullamento) FROM stdin;
+2	3	1	1	2026-02-17 16:55:36.847996	f
+3	7	2	3	2026-02-18 16:55:36.847996	f
+5	3	5	1	2026-02-20 16:55:36.847996	f
+6	6	8	2	2026-02-15 16:55:36.847996	f
+7	2	3	4	2025-10-10 10:00:00	f
+8	3	3	2	2025-10-15 15:00:00	f
+9	4	4	2	2025-12-01 18:30:00	f
+10	5	4	1	2025-12-02 19:00:00	f
+11	2	6	1	2026-02-11 16:55:36.847996	t
+12	3	6	1	2026-02-12 16:55:36.847996	t
+1	2	1	2	2026-02-16 16:55:36.847996	t
+13	2	8	2	2026-02-22 15:42:59.662021	f
+\.
+
+
+--
+-- TOC entry 5092 (class 0 OID 16608)
+-- Dependencies: 228
+-- Data for Name: recensioni; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.recensioni (id, utente_id, testo, voto, stato, data_recensione, nome_visibile, data_creazione, titolo) FROM stdin;
+1	2	Ho scoperto tantissimi eventi vicino casa che non trovavo sui social. Interfaccia chiara e prenotazione velocissima.	5	approvato	2026-02-14 16:56:32.728949	Luca V.	2026-02-14 16:56:32.728949	Finalmente tutti gli eventi in un unico posto
+2	3	Mi piace molto la possibilità di filtrare per categoria.	4	approvato	2026-02-16 16:56:32.728949	Anna B.	2026-02-16 16:56:32.728949	Ottimo punto di partenza
+3	6	Uso EnjoyCity per organizzare le uscite con gli amici nel weekend. In pochi minuti troviamo qualcosa di carino da fare.	5	approvato	2026-02-18 16:56:32.728949	Giulia	2026-02-18 16:56:32.728949	Perfetto per i weekend
+4	4	Non ho capito subito come funzionavano le prenotazioni sugli eventi gratuiti, forse servirebbe un breve tutorial.	3	in_attesa	2026-02-19 16:56:32.728949	Marco	2026-02-19 16:56:32.728949	Serve qualche indicazione in più
+5	5	Ho segnalato un evento annullato e l’admin ha aggiornato la scheda in pochi minuti. Servizio davvero attento.	4	in_attesa	2026-02-20 16:56:32.728949	Sara	2026-02-20 16:56:32.728949	Assistenza rapida e precisa
+6	2	Mi piacerebbe poter filtrare gli eventi anche per fascia oraria, ad esempio solo mattina o solo sera. Sarebbe utile quando ho poche ore libere.	4	in_attesa	2026-02-21 05:08:03.138192	Dana I.	2026-02-21 05:08:03.138192	Un filtro in più sulla fascia oraria
+7	3	Ho trovato un evento segnalato come “attivo” ma in realtà sui social dell’organizzatore risultava spostato di data. Sarebbe utile una funzione per segnalare velocemente queste incongruenze.	3	in_attesa	2026-02-20 23:08:03.138192	Andrea P.	2026-02-20 23:08:03.138192	Segnalazione cambio data evento
+8	7	Nel complesso adoro l’idea di EnjoyCity, ma sull’app da mobile i filtri occupano troppo spazio. Suggerirei una versione compatta o a scomparsa.	4	in_attesa	2026-02-18 17:08:03.138192	Paolo G.	2026-02-18 17:08:03.138192	Ottimo, ma da migliorare su mobile
+\.
+
+
+--
+-- TOC entry 5084 (class 0 OID 16533)
+-- Dependencies: 220
+-- Data for Name: utenti; Type: TABLE DATA; Schema: public; Owner: www
+--
+
+COPY public.utenti (id, nome, cognome, email, password, ruolo, bloccato, data_registrazione, bloccato_fino) FROM stdin;
+1	Vincenzo	Galdiero	vincenzo.galdiero@enjoycity.it	$2y$10$gWhbC801Dauwb2/pmcMdcuta56BuWoR4q7yK4XlJK0V4keb6ASkw6	admin	f	2026-01-22 16:53:48.143143	\N
+2	Dana	Iannaccone	dana.iannaccone@gmail.com	$2y$10$wdgWQfFRY/1mlAFf6CJyFOHy73d7Aj8Qrf2hwMOhceYDM6aJoRPSa	user	f	2026-02-01 16:53:48.143143	\N
+3	Andrea	Purcaro	andrea.purcaro@gmail.com	$2y$10$uyu/d.ihmoR4V7uNqnHo..bgAzTYPY1NK3WKbKwQd4/QCUjYB7kLu	user	f	2026-02-03 16:53:48.143143	\N
+4	Marco	Russo	marco.russo@tim.it	$2y$10$VgNmSVmaC/dTXivlAGv3JO.7cgY/Q9mV7Lfd1QTiraflWf0PfHrpu	user	t	2026-02-06 16:53:48.143143	\N
+5	Sara	Conte	sara.conte@hotmail.it	$2y$10$tFlZLw7mDTrcqIvtwalj8.9LbnPw.DfM.UB9Yxp5vCewV65Q/g3da	user	t	2026-02-11 16:53:48.143143	2026-02-28 16:53:48.143143
+6	Giulia	Esposito	giulia.esposito@unisa.it	$2y$10$nB9Svy19AmrqY1EZz0htNeHm9u8tl/YBwm.0MnAbKs6Z4aOf4SdTS	user	f	2026-02-09 16:53:48.143143	2026-02-20 16:53:48.143143
+7	Paolo	Gallo	paolo.gallo@libero.it	$2y$10$IpIQeNEIk3DGhYEzPmtmrObmLDT8Tm4fuzBKx20E4tiYMGRIW0I6m	user	f	2026-02-16 16:53:48.143143	\N
+8	Marta	Ferri	marta.ferri@gmail.com	$2y$10$UnthCBveNF4NqLkAZUPprOq0yTE2lebx1qnuKj8gajxYoXtJ.g0jq	user	f	2026-02-22 10:28:47.59532	\N
+9	Vincenzo	Galdiero	vincenzo.galdiero@outlook.it	$2y$10$FlKO9qwifN8V00GB5FsW8OulGnlXtiT0oLLQ3BAaBorwJ2v/4ZtXa	user	f	2026-02-22 16:29:53.203905	\N
+\.
+
+
+--
+-- TOC entry 5106 (class 0 OID 0)
+-- Dependencies: 221
+-- Name: categorie_id_seq; Type: SEQUENCE SET; Schema: public; Owner: www
+--
+
+SELECT pg_catalog.setval('public.categorie_id_seq', 1, false);
+
+
+--
+-- TOC entry 5107 (class 0 OID 0)
+-- Dependencies: 223
+-- Name: eventi_id_seq; Type: SEQUENCE SET; Schema: public; Owner: www
+--
+
+SELECT pg_catalog.setval('public.eventi_id_seq', 24, true);
+
+
+--
+-- TOC entry 5108 (class 0 OID 0)
+-- Dependencies: 225
+-- Name: prenotazioni_id_seq; Type: SEQUENCE SET; Schema: public; Owner: www
+--
+
+SELECT pg_catalog.setval('public.prenotazioni_id_seq', 13, true);
+
+
+--
+-- TOC entry 5109 (class 0 OID 0)
+-- Dependencies: 227
+-- Name: recensioni_id_seq; Type: SEQUENCE SET; Schema: public; Owner: www
+--
+
+SELECT pg_catalog.setval('public.recensioni_id_seq', 8, true);
+
+
+--
+-- TOC entry 5110 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: utenti_id_seq; Type: SEQUENCE SET; Schema: public; Owner: www
+--
+
+SELECT pg_catalog.setval('public.utenti_id_seq', 9, true);
+
+
+--
+-- TOC entry 4914 (class 2606 OID 16560)
+-- Name: categorie categorie_nome_key; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.categorie
+    ADD CONSTRAINT categorie_nome_key UNIQUE (nome);
+
+
+--
+-- TOC entry 4916 (class 2606 OID 16558)
+-- Name: categorie categorie_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.categorie
+    ADD CONSTRAINT categorie_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4918 (class 2606 OID 16581)
+-- Name: eventi eventi_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.eventi
+    ADD CONSTRAINT eventi_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4928 (class 2606 OID 16634)
+-- Name: preferenze_utente preferenze_utente_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.preferenze_utente
+    ADD CONSTRAINT preferenze_utente_pkey PRIMARY KEY (utente_id, categoria_id);
+
+
+--
+-- TOC entry 4920 (class 2606 OID 16596)
+-- Name: prenotazioni prenotazioni_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni
+    ADD CONSTRAINT prenotazioni_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4922 (class 2606 OID 16664)
+-- Name: prenotazioni prenotazioni_unique; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni
+    ADD CONSTRAINT prenotazioni_unique UNIQUE (utente_id, evento_id);
+
+
+--
+-- TOC entry 4926 (class 2606 OID 16621)
+-- Name: recensioni recensioni_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.recensioni
+    ADD CONSTRAINT recensioni_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4924 (class 2606 OID 16660)
+-- Name: prenotazioni uq_prenotazioni_utente_evento; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni
+    ADD CONSTRAINT uq_prenotazioni_utente_evento UNIQUE (utente_id, evento_id);
+
+
+--
+-- TOC entry 4910 (class 2606 OID 16549)
+-- Name: utenti utenti_email_key; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.utenti
+    ADD CONSTRAINT utenti_email_key UNIQUE (email);
+
+
+--
+-- TOC entry 4912 (class 2606 OID 16547)
+-- Name: utenti utenti_pkey; Type: CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.utenti
+    ADD CONSTRAINT utenti_pkey PRIMARY KEY (id);
+
+
+--
+-- TOC entry 4929 (class 2606 OID 16645)
+-- Name: eventi eventi_categoria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.eventi
+    ADD CONSTRAINT eventi_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorie(id);
+
+
+--
+-- TOC entry 4930 (class 2606 OID 16582)
+-- Name: eventi eventi_organizzatore_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.eventi
+    ADD CONSTRAINT eventi_organizzatore_id_fkey FOREIGN KEY (organizzatore_id) REFERENCES public.utenti(id) ON DELETE SET NULL;
+
+
+--
+-- TOC entry 4934 (class 2606 OID 16640)
+-- Name: preferenze_utente preferenze_utente_categoria_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.preferenze_utente
+    ADD CONSTRAINT preferenze_utente_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorie(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4935 (class 2606 OID 16635)
+-- Name: preferenze_utente preferenze_utente_utente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.preferenze_utente
+    ADD CONSTRAINT preferenze_utente_utente_id_fkey FOREIGN KEY (utente_id) REFERENCES public.utenti(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4931 (class 2606 OID 16602)
+-- Name: prenotazioni prenotazioni_evento_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni
+    ADD CONSTRAINT prenotazioni_evento_id_fkey FOREIGN KEY (evento_id) REFERENCES public.eventi(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4932 (class 2606 OID 16597)
+-- Name: prenotazioni prenotazioni_utente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.prenotazioni
+    ADD CONSTRAINT prenotazioni_utente_id_fkey FOREIGN KEY (utente_id) REFERENCES public.utenti(id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 4933 (class 2606 OID 16622)
+-- Name: recensioni recensioni_utente_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: www
+--
+
+ALTER TABLE ONLY public.recensioni
+    ADD CONSTRAINT recensioni_utente_id_fkey FOREIGN KEY (utente_id) REFERENCES public.utenti(id) ON DELETE CASCADE;
+
+
+-- Completed on 2026-02-22 20:28:47
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict ihNoN3MnDrhtC2NvOkXIhFiyjA8gNMsd6wIEwi33gPvEeUwFm8rhP0dKIQG4Hzt
+
