@@ -4,10 +4,6 @@ Piattaforma web per la gestione e promozione di eventi locali.
 
 EnjoyCity è un sistema web full-stack sviluppato in PHP e PostgreSQL che consente la consultazione, prenotazione e moderazione di eventi locali attraverso un’architettura multi-ruolo (utente anonimo, utente registrato, amministratore).
 
-🎥 Demo
-
-(Inserire qui eventuale link video o screenshot del progetto)
-
 🚀 Funzionalità Principali
 🔎 Consultazione eventi
 
@@ -117,7 +113,7 @@ Vincenzo Galdiero
 
 Dana Iannaccone
 
-Andrea Purcaro ()
+Andrea Purcaro
 
 🎓 Contesto Accademico
 
